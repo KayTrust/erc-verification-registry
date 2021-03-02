@@ -1,7 +1,6 @@
 pragma solidity ^0.4.15;
-import "./ClaimAttester.sol";
 
-contract Id is ClaimAttester {
+contract Id {
 
   event ControllerSet(address controller);
   event ProfileSet(bytes16 name, string url);
