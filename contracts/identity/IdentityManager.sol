@@ -1,8 +1,8 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.16;
 import "./Proxy.sol";
 import "./Id.sol";
 
-contract IdentityManager is MultiOwned {
+contract IdentityManager {
     
     event IdentityCreated(address proxy);
     event IdentityRegistered(address proxy);
@@ -26,29 +26,29 @@ contract IdentityManager is MultiOwned {
     string private constant CAP_AUTH = "auth";
     string private constant CAP_DEVICE_MANAGER = "devicemanager";
     string private constant CAP_ADMIN = "admin";
-
-    constructor() MultiOwned(msg.sender) public {}
     
-    function createIdentity(bytes16 keyMnemonic, bytes16 keyProfile, string urlProfile, string username, string salt) public returns (address){
-        Proxy proxy = new Proxy(this);
-        Id id = new Id(this);
-        proxy.setId(id);
-        registered_identities[proxy] = true;
+    constructor() public {}
+    
+    function createIdentity(bytes16 keyMnemonic, bytes16 keyProfile, string memory urlProfile, string memory username, string memory salt) public returns (address){
+        Proxy proxy = new Proxy(address(this));
+        Id id = new Id(address(this));
+        proxy.setId(address(id));
+        registered_identities[address(proxy)] = true;
         //Mnemonic
         id.setMnemonic(keyMnemonic, username, salt);
         //Profile
         id.setProfile(keyProfile, urlProfile);
         //Controller of Id
-        id.setController(proxy);
-        emit MnemonicSet(username, proxy);
+        id.setController(address(proxy));
         setFirstDevice(proxy, msg.sender, now, 0);
-        emit IdentityCreated(proxy);
-        return proxy;
+        emit MnemonicSet(username, address(proxy));
+        emit IdentityCreated(address(proxy));
+        return address(proxy);
     }
     
-    function setFirstCap(Proxy identity, address device, string cap, uint start_date, uint end_date) private {
-        capabilities[identity][device][cap] = Timerange(start_date, end_date);
-        emit CapSet(identity, device, cap, start_date, end_date);
+    function setFirstCap(Proxy identity, address device, string memory cap, uint start_date, uint end_date) private {
+        capabilities[address(identity)][device][cap] = Timerange(start_date, end_date);
+        emit CapSet(address(identity), device, cap, start_date, end_date);
     }
     
     function setFirstDevice(Proxy identity, address device, uint start_date, uint end_date) private {
@@ -58,13 +58,13 @@ contract IdentityManager is MultiOwned {
         setFirstCap(identity, device, CAP_ADMIN, start_date, end_date);
     }
 
-    function setCap(Proxy identity, address device, string cap, uint start_date, uint end_date) public checkCap(identity, CAP_DEVICE_MANAGER) {
-        capabilities[identity][device][cap] = Timerange(start_date, end_date);
-        emit CapSet(identity, device, cap, start_date, end_date);
+    function setCap(Proxy identity, address device, string memory cap, uint start_date, uint end_date) public checkCap(identity, CAP_DEVICE_MANAGER) {
+        capabilities[address(identity)][device][cap] = Timerange(start_date, end_date);
+        emit CapSet(address(identity), device, cap, start_date, end_date);
     }
 
-    function hasCap(Proxy identity, address device, string cap) public returns (bool) {
-        Timerange memory allowed_period = capabilities[identity][device][cap];
+    function hasCap(Proxy identity, address device, string memory cap) public view returns (bool) {
+        Timerange memory allowed_period = capabilities[address(identity)][device][cap];
         return validTimerange(allowed_period);
     }
 
@@ -75,41 +75,41 @@ contract IdentityManager is MultiOwned {
     }
 
     function unregisterIdentity(Proxy identity) public checkCap(identity, CAP_ADMIN) {
-        registered_identities[identity] = false;
-        emit IdentityUnregistered(identity);
+        registered_identities[address(identity)] = false;
+        emit IdentityUnregistered(address(identity));
     }
 
     function upgrade(Proxy identity, IdentityManager newIdentityManager) public checkCap(identity, CAP_ADMIN) {
-        identity.addOwner(newIdentityManager);
+        identity.addOwner(address(newIdentityManager));
         identity.renounce();
         newIdentityManager.registerIdentity(identity, msg.sender);
         unregisterIdentity(identity);
-        emit Upgraded(this, newIdentityManager);
+        emit Upgraded(address(this), address(newIdentityManager));
     }
 
     /// @dev Allows a user to transfer control of existing proxy to this contract. Must come through proxy
     /// @param owner Key who can use this contract to control proxy. Given full power
     /// Note: User must change owner of proxy to this contract after calling this
     function registerIdentity(Proxy identity, address owner) public {
-        require(!registered_identities[identity], "Already registered on that identity");
-        registered_identities[identity] = true;
-        require(identity.isOwner(this), "I'm not an owner of that identity");
+        require(!registered_identities[address(identity)], "Already registered on that identity");
+        registered_identities[address(identity)] = true;
+        require(identity.isOwner(address(this)), "I'm not an owner of that identity");
         setFirstDevice(identity, owner, now, 0);
-        emit IdentityRegistered(identity);
+        emit IdentityRegistered(address(identity));
     }
 
-    modifier checkCap(Proxy identity, string cap) {
-        Timerange memory allowed_period = capabilities[identity][msg.sender][cap];
+    modifier checkCap(Proxy identity, string memory cap) {
+        Timerange memory allowed_period = capabilities[address(identity)][msg.sender][cap];
         require(validTimerange(allowed_period), "Capability not allowed");
         _;
     }
 
-    function validTimerange(Timerange timerange) private returns (bool) {
+    function validTimerange(Timerange memory timerange) private view returns (bool) {
         return timerange.start != 0 && timerange.start <= now && (now <= timerange.end || timerange.end == 0);
     }
 
     /// @dev Allows a user to forward a call through their proxy.
-    function forwardTo(Proxy identity, address destination, uint value, bytes data) public checkCap(identity, CAP_FORWARD) {
+    function forwardTo(Proxy identity, address destination, uint value, bytes memory data) public checkCap(identity, CAP_FORWARD) {
         identity.forward(destination, value, data);
     }
 }

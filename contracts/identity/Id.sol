@@ -1,6 +1,7 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.5.16;
+import "./ClaimAttester.sol";
 
-contract Id {
+contract Id is ClaimAttester {
 
   event ControllerSet(address controller);
   event ProfileSet(bytes16 name, string url);
@@ -24,9 +25,9 @@ contract Id {
   }
   mapping (bytes16 => AddressMnemonic) public mnemonics;
 
-  function setKey(bytes16 name, string url) onlyController {
+  function setKey(bytes16 name, string memory url) public onlyController {
     keys[name] = url;
-    KeySet(name, url);
+    emit KeySet(name, url);
   }
 
   modifier onlyController {
@@ -34,36 +35,33 @@ contract Id {
     _;
   }
 
-  function Id(address _controller) {
+  constructor(address _controller) public {
     controller = _controller;
-    ControllerSet(controller);
+    emit ControllerSet(controller);
   }
 
-  function setController(address _controller) {
-    if (controller == address(0) || controller == msg.sender) {
-      controller = _controller;
-      ControllerSet(controller);
-    } else {
-      revert();
-    }
+  function setController(address _controller) public {
+    require((controller == address(0) || controller == msg.sender), "controller cannot be the same as the sender");
+    controller = _controller;
+    emit ControllerSet(controller);
   }
 
-  function setMnemonic(bytes16 key, string username, string salt) onlyController {
+  function setMnemonic(bytes16 key, string memory username, string memory salt) public onlyController {
     mnemonics[key] = AddressMnemonic(username, salt);
-    MnemonicSet(username, msg.sender);
+    emit MnemonicSet(username, msg.sender);
   }
 
-  function setAdmin(address newAdmin) onlyController {
-    AdminUpdated(admin, newAdmin);
+  function setAdmin(address newAdmin) public onlyController {
+    emit AdminUpdated(admin, newAdmin);
     admin = newAdmin;
   }
 
-  function setProfile(bytes16 name, string url) onlyController {
+  function setProfile(bytes16 name, string memory url) public onlyController {
     profiles[name] = url;
-    ProfileSet(name, url);
+    emit ProfileSet(name, url);
   }
 
-  function shareInfo(string url, address with, bytes32 contentHash) onlyController {
-    ConsentedShareInfo(url, with, contentHash);
+  function shareInfo(string memory url, address with, bytes32 contentHash) public onlyController {
+    emit ConsentedShareInfo(url, with, contentHash);
   }
 }

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.5.16;
 
 contract MultiOwned {
   event OwnerAdded(address indexed newOwner);
@@ -9,9 +9,9 @@ contract MultiOwned {
     _;
   }
 
-  function MultiOwned(address firstOwner) public {
+  constructor(address firstOwner) public {
     owners[firstOwner] = true;
-    OwnerAdded(firstOwner);
+    emit OwnerAdded(firstOwner);
   }
 
   function isOwner(address addr) public view returns(bool) {
@@ -20,11 +20,12 @@ contract MultiOwned {
 
   function addOwner(address newOwner) public onlyOwner {
     owners[newOwner] = true;
-    OwnerAdded(newOwner);
+    emit OwnerAdded(newOwner);
   }
 
   function renounce() public onlyOwner {
     owners[msg.sender] = false;
-    OwnerRemoved(msg.sender);
+    emit OwnerRemoved(msg.sender);
   }
+  
 }

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.16;
 
 contract VerificationRegistry {
   event Verified(bytes32 indexed hash, address by, uint256 date, uint256 expDate);
