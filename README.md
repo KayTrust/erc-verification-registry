@@ -17,7 +17,7 @@ KayTrust achieves that by using a **decentralised trust repository** (typically 
 ## What is KayTrust?
 At its base layer, KayTrust is an open-source set of specifications around digital identity. Those specifications build on top of existing Internet standards whenever they're available.
 
-There is also a free mobile app called KayTrust Wallet that is available for free on Google's Play Store and on Apple's App Store. That app lets you hold verifiable credentials and manage your decentralized digital identities.
+There is also a free mobile app called KayTrust Wallet that is available for free [on Google's Play Store](https://play.google.com/store/apps/details?id=com.everis.mytrust.app) and [on Apple's App Store](https://apps.apple.com/app/mytrust-wallet/id1477073898). That app lets you hold verifiable credentials and manage your decentralized digital identities.
 
 (As a side note: if you're a large company and you need consulting services, [everis](https://everis.com/) licenses ready-to-use applications, microservices and an SDK that use these specifications. You can find more information about those commercial products on [KayTrust commercial website](https://www.kaytrust.id/).)
 
