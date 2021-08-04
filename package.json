@@ -1,0 +1,26 @@
+{
+  "name": "id",
+  "version": "1.0.0",
+  "description": "## What is Digital Identity?",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KayTrust/id.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KayTrust/id/issues"
+  },
+  "homepage": "https://github.com/KayTrust/id#readme",
+  "devDependencies": {
+    "@openzeppelin/contracts-upgradeable": "^4.2.0",
+    "chai": "^4.3.4",
+    "ganache-cli": "^6.12.2",
+    "truffle": "^5.4.2"
+  }
+}
