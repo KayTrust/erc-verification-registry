@@ -25,13 +25,13 @@ There is also a free mobile app called KayTrust Wallet that is available for fre
 
 ### DIDs
 
-KayTrust uses the standard DID protocol for identifiers, and defines an ["EV" DID method](/KayTrust/did-method-ev) based on [smart contracts](https://developer.kaytrust.id/Specs/Proxy-Contract-ERC).
+KayTrust uses the standard DID protocol for identifiers, and defines an ["EV" DID method](https://github.com/KayTrust/did-method-ev) based on [smart contracts](https://developer.kaytrust.id/Specs/Proxy-Contract-ERC).
 
 | Specification                                  | Builds on top of        | What is it good for?
 | ---------------------------------------------- | ----------------------- | --------------------
-| ["ev" DID method](/KayTrust/did-method-ev)      | W3C's DID Specification | Ethereum-based DIDs
-| [Proxy contract ERC](https://developer.kaytrust.id/Specs/Proxy-Contract-ERC) ([code](/KayTrust/did-method-ev/contracts/Proxy.sol))| Ethereum                | Transaction forwarding, on-chain representation, single Ethereum addresses
-| Identity Manager ERC  ([code](/KayTrust/did-method-ev/contracts/IdentityManager.sol))                          | Ethereum                | Flexible controlling logic for Proxy contracts
+| ["ev" DID method](https://github.com/KayTrust/did-method-ev)      | W3C's DID Specification | Ethereum-based DIDs
+| [Proxy contract ERC](https://developer.kaytrust.id/Specs/Proxy-Contract-ERC) ([code](https://github.com/KayTrust/did-method-ev/contracts/Proxy.sol))| Ethereum                | Transaction forwarding, on-chain representation, single Ethereum addresses
+| Identity Manager ERC  ([code](https://github.com/KayTrust/did-method-ev/contracts/IdentityManager.sol))                          | Ethereum                | Flexible controlling logic for Proxy contracts
 
 ### Verifiable credentials and Presentations
 
@@ -43,7 +43,7 @@ The [draft ERC](https://developer.kaytrust.id/Specs/Content-Attestation-Registry
 
 | Specification                                                         | Builds on top of        | What is it good for?
 | --------------------------------------------------------------------- | ----------------------- | --------------------
-| [Content Attestation Registry ERC](https://developer.kaytrust.id/Specs/Content-Attestation-Registry-ERC) ([code](/KayTrust/id/contracts/verificationRegistry/VerificationRegistry.sol)) | Ethereum                | Attesting any kind of content on-chain
+| [Content Attestation Registry ERC](https://developer.kaytrust.id/Specs/Content-Attestation-Registry-ERC) ([code](https://github.com/KayTrust/id/contracts/verificationRegistry/VerificationRegistry.sol)) | Ethereum                | Attesting any kind of content on-chain
 | [Attestation Registry VC proof type](https://developer.kaytrust.id/Specs/Ethereum-Attestation-Registry-Proof-Type) | W3C's Verifiable Credentials Specification | Using a Content Attestation Registry as proof of a VC or a VP
 
 ### Decentralized SSO: _DID Connect_
@@ -52,7 +52,7 @@ KayTrust introduces a way for identity owners (a.k.a. subjects) to authenticate 
 
 | Specification                         | Builds on top of | What is it good for?
 | ------------------------------------- | ---------------- | ------------------------------------
-| [DIDConnect OIDC Profile](/KayTrust/did-connect) | OpenID Connect   | Self-sovereign use of OpenID Connect
+| [DIDConnect OIDC Profile](https://github.com/KayTrust/did-connect) | OpenID Connect   | Self-sovereign use of OpenID Connect
 
 ### Schemas
 
