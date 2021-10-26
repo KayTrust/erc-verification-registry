@@ -43,7 +43,7 @@ The [draft ERC](https://developer.kaytrust.id/Specs/Content-Attestation-Registry
 
 | Specification                                                         | Builds on top of        | What is it good for?
 | --------------------------------------------------------------------- | ----------------------- | --------------------
-| [Content Attestation Registry ERC](https://developer.kaytrust.id/Specs/Content-Attestation-Registry-ERC) ([code](/KayTrust/id/contracts/verificationRegistry/VerificationRegistry.sol))  | Ethereum                | Attesting any kind of content on-chain
+| [Content Attestation Registry ERC](https://developer.kaytrust.id/Specs/Content-Attestation-Registry-ERC) ([code](/KayTrust/id/contracts/verificationRegistry/VerificationRegistry.sol)) | Ethereum                | Attesting any kind of content on-chain
 | [Attestation Registry VC proof type](https://developer.kaytrust.id/Specs/Ethereum-Attestation-Registry-Proof-Type) | W3C's Verifiable Credentials Specification | Using a Content Attestation Registry as proof of a VC or a VP
 
 ### Decentralized SSO: _DID Connect_
