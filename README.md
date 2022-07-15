@@ -1,7 +1,7 @@
 ```
 eip: <to be assigned>
 title: ERC: Content Attestation Registry
-author: David Ammouial (@davux) <dammouia@everis.com>
+author: David Ammouial (@davux)
 discussions-to: <URL>
 status: Draft
 type: Standards Track
