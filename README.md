@@ -1,63 +1,107 @@
-# KayTrust Digital Identity components
+```
+eip: <to be assigned>
+title: ERC: Content Attestation Registry
+author: David Ammouial (@davux) <dammouia@everis.com>
+discussions-to: <URL>
+status: Draft
+type: Standards Track
+category: ERC
+created: 2019-03-29
+```
 
-## What is Digital Identity?
+## Simple Summary
+A generic and privacy-aware registry of attested information.
 
-Identity refers to 2 things:
+## Abstract
+This ERC describes a way for any entity to express and record its agreement with a given content, independently from the type of content, by storing a hash on chain along with a validity time range. Even though the existence of the agreement itself is provable and non-ambiguous, this specification doesn't place any semantics on the type of original content, how it's hashed, or what it means to agree with it. Likewise, it doesn't define any recommendation on the semantic validity of an attestation in relation to its recorded time range. As with any kind of recorded agreement, it is generally a good idea for the involved parties to ensure a mutual understanding on what is agreed upon and to what extent.
 
-- **Identifiers**, i.e. unique and non-ambiguous strings used to _refer_ to people, organizations, vehicles, building, etc. An email address, a phone number, a national ID number, a nickname or a physical address are all identifiers within a certain system.
-- **Claims**, i.e. _what_ is said about those entities. It's also usually important to consider _who_ says those things. For example "Individual with ID number 123 can drive" is useless without the information (and proof) of who claims it – typically a government entity. A set of claims, packed along with an issuing entity's identifier and a way to verify the whole thing, is called a **credential**.
+This ERC also allows the agreeing party to amend a previously recorded attestation by redefining the validity time range (including retracting the attestation altogether).
 
-## What is Self-Sovereign digital identity?
+## Motivation
+Traditionally, attesting to some kind of content is done through static signatures, e.g. a base64-encoded embedded RSA signature or a PGP signature. As for the smart contract world, hashes are often used in functions to certify content approval but no stable interface has been defined. This EIP is an attempt to homogenize a common interface for agreement that interoperable contract-based and web-based applications may start benefitting from.
 
-It is important to understand the vision behind self-sovereign identity: **nobody (no company, not any government, etc.) may control, block, censure, delete or spoof users' identity, restrict what users may do with their identity, or access information that users didn't agree to share.**
+Also, traditional signatures, in order to be retracted or amended, need to be put in context of Certificate Revocation Lists (CRLs) or similar mechanisms. This EIP attempts to leverage blockchain technology to remove the need for such centralized databases.
 
-KayTrust achieves that by using a **decentralised trust repository** (typically a blockchain) for identifiers, for credential proofs, and for sharing consent. The repository itself only stores proofs of data integrity. No private information is stored on the shared repository, so KayTrust works on public repositories such as public blockchains.
+## Definitions
 
+**Attester**
 
-## What is KayTrust?
-At its base layer, KayTrust is an open-source set of specifications around digital identity. Those specifications build on top of existing Internet standards whenever they're available.
+The attester of a given content is any entity, represented by an Ethereum address, that records its agreement with that content.
 
-There is also a free mobile app called KayTrust Wallet that is available for free [on Google's Play Store](https://play.google.com/store/apps/details?id=com.everis.mytrust.app) and [on Apple's App Store](https://apps.apple.com/app/mytrust-wallet/id1477073898). That app lets you hold verifiable credentials and manage your decentralized digital identities.
+**Attestation**
 
-(As a side note: if you're a large company and you need consulting services, [NTT DATA](https://nttdata.com/) licenses ready-to-use applications, microservices and an SDK that use these specifications. You can find more information about those commercial products on [KayTrust commercial website](https://www.kaytrust.id/).)
+In this specification, an attestation is defined as a (start time, end time) tuple that represents the time range during which a content is agreed upon by a specific attester.
 
-## Specifications
+**Verifier**
 
-### DIDs
+The verifier of an attestation is an entity going through the process of reading an attestation for a given content and making conclusions on whether to trust that content.
 
-KayTrust uses the standard DID protocol for identifiers, and defines an ["EV" DID method](https://github.com/KayTrust/did-method-ev) based on [smart contracts](https://developer.kaytrust.id/Specs/Proxy-Contract-ERC).
+## Specification
 
-| Specification                                  | Builds on top of        | What is it good for?
-| ---------------------------------------------- | ----------------------- | --------------------
-| ["ev" DID method](https://github.com/KayTrust/did-method-ev)      | W3C's DID Specification | Ethereum-based DIDs
-| [Proxy contract ERC](https://developer.kaytrust.id/Specs/Proxy-Contract-ERC) ([code](https://github.com/KayTrust/did-method-ev/contracts/Proxy.sol))| Ethereum                | Transaction forwarding, on-chain representation, single Ethereum addresses
-| Identity Manager ERC  ([code](https://github.com/KayTrust/did-method-ev/contracts/IdentityManager.sol))                          | Ethereum                | Flexible controlling logic for Proxy contracts
+The general idea of this EIP is that attesting a given content is equivalent to attesting a hash of that content, as long as the hashing function is known by the attester and the verifier.
 
-### Verifiable credentials and Presentations
+An attestation is recorded as an `(iat, exp)` tuple, where `iat` ("issued at") is the time the attestation starts to be valid, and `exp` ("expires") is the time after which the attestation is no longer valid.
 
-Besides identifiers, the point of an identity is to have credentials associated to it. A credential answers the question *"Who are you?"* and contains one or more key-value claims (e.g. birth date, name, qualifications, citizenships, etc.) about an entity called subject, issued by another entity called issuer. The Verifiable Credentials Working Group at the W3C is defining a standard that KayTrust follows.
+Note the special meaning of the following values:
 
-Both Verifiable Credentials (VC) and Verifiable Presentations (VP) contain proofs, which is what makes them verifiable. The VC specification doesn't enforce a specific proof algorithm but describes the articulation between a credential/presentation and a specific proof method. Implementers are free to come up with their own proof method or to follow someone else's.
+- `iat == 0` means the attester is NOT currently attesting to that content. In this case, the value of `exp` is irrelevant. Per Solidity rules, this is the initial value for any attestation. Its intended usage inside the `attest()` function is to explicitly revoke an existing (i.e. non-zero `iat`) attestation.
+- `exp == 0` means the attester is not currently placing any expiration time on the attestation. Just like any other value, a value of `0` may be amended later if the attester decides so.
 
-The [draft ERC](https://developer.kaytrust.id/Specs/Content-Attestation-Registry-ERC) (Ethereum Request for Comments) describes a way for any entity to attest arbitrary content on a smart contract. There is a corresponding [proof type](https://developer.kaytrust.id/Specs/Ethereum-Attestation-Registry-Proof-Type) that enables to use that attestation registry inside a Verifiable Credential or a Verifiable Presentation.
+This EIP defines the following functions:
 
-| Specification                                                         | Builds on top of        | What is it good for?
-| --------------------------------------------------------------------- | ----------------------- | --------------------
-| [Content Attestation Registry ERC](https://developer.kaytrust.id/Specs/Content-Attestation-Registry-ERC) ([code](https://github.com/KayTrust/id/contracts/verificationRegistry/VerificationRegistry.sol)) | Ethereum                | Attesting any kind of content on-chain
-| [Attestation Registry VC proof type](https://developer.kaytrust.id/Specs/Ethereum-Attestation-Registry-Proof-Type) | W3C's Verifiable Credentials Specification | Using a Content Attestation Registry as proof of a VC or a VP
+**attest**
 
-### Decentralized SSO: _DID Connect_
+Used in a transaction to record an `(iat, exp)` attestation of a given hash.
 
-KayTrust introduces a way for identity owners (a.k.a. subjects) to authenticate on third-party apps. We propose using OpenID Connect, only in a self-sovereign fashion. The trick is to use as Authorization Server the identity owner's own device, as opposed to a predefined AS in traditional services.
+```js
+ function attest(bytes32 hash, uint iat, uint exp) public;
+```
 
-| Specification                         | Builds on top of | What is it good for?
-| ------------------------------------- | ---------------- | ------------------------------------
-| [DIDConnect OIDC Profile](https://github.com/KayTrust/did-connect) | OpenID Connect   | Self-sovereign use of OpenID Connect
+**attestations**
 
-### Schemas
+Used to read the most recent attestation, if any, of a given `hash`, recorded by a given `attester`. Its return value is an `(iat, exp)` tuple.
 
-KayTrust mostly relies on well-known schemas, such as the great work done by the schema.org community. However, when the need arises, additional schemas are defined.
+```js
+function attestations(bytes32 hash, address attester) public;
+```
 
-| Schema                                            | Purpose
-| ------------------------------------------------- | --------------------------------------------------
-| [Trusted Credentials](https://developer.kaytrust.id/Specs/Trusted-Credentials) | Chain of Trust for Verifiable Credentials
+This EIP defines the following event:
+
+**Attested**
+
+This event is emitted everytime a `hash` is attested or revoked by an `attester` and contains the `iat` and `exp` times of the attestation. A value of `0` for `iat` means any previous attestation is being revoked. The event may be emitted with any values for `iat` and `exp`, including values equal to the previous ones (for example an already revoked attestation may be revoked again, or an attestation may be attested again with the same values).
+
+```js
+event Attested(bytes32 indexed hash, address attester, uint iat, uint exp);
+```
+
+## Note about validity times
+
+The validity time range is a mere indication by the attester. This EIP does not define what policy should be applied by verifying software or people with respect to current time. Here are a few real-life policy examples:
+
+- **Safe policy**. Some verifiers might decide that an attestation is only acceptable if the expiration time is at least 6 months in the future.
+- **Flexible policy**. Some verifiers might leave a tolerance window during which they still accept an expired attestation.
+- **Strict policy**. Some verifiers might only accept an attestation during the attestation time range.
+- Some verifiers might apply more complex policies, e.g. where the tolerance depends on the identity of the attester, on the content, on the actual transaction time of the attestation, on the existence of previous attestations, etc.
+
+## Rationale
+
+### Storing validity times on-chain vs. off-chain
+Information stored on a blockchain is both public and permanent, which makes it a crucial decision to decide what to store and what not to store. For this reason, a balance should always be seeked between privacy and usefulness. Specifically, the decision to include validity times on chain rather than in the original content is a result of that subjective balance:
+
+- Including validity times means leaking out information allowing to suspect or discard specific contents for a given hash. For example, time ranges of 3 weeks might give up certain types of documents, and exclude e.g. passports.
+- Leaving validity times off-chain (typically in the original document) might not work very well for some types of documents where the issuer and the attester are separate entities and the attester doesn't have the liberty to emit an "attestation document" containing validity times.
+
+This specification allows verifiers to store date information on-chain. However, the attester and the verifier are always free to use any non-zero value in the `(iat, exp)` tuple and maintain date information off-chain instead.
+
+### Attesting hashes vs. plain data
+To follow best practices, it was deemed equally secure, cheaper, and most respectful to privacy to record fixed-length `bytes32` data rather than actual content.
+
+## Backwards Compatibility
+This EIP doesn't introduce any known backwards compatibility issues.
+
+## Implementation
+An implementation may be found [here](https://gitlab.com/KayTrust/developer/blob/master/contracts/AttestationRegistry.sol).
+
+## Copyright
+Copyright and related rights waived via [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
