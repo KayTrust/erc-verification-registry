@@ -32,13 +32,15 @@ The attester of a given content is any entity, represented by an Ethereum addres
 
 In this specification, an attestation is defined as a (start time, end time) tuple that represents the time range during which a content is agreed upon by a specific attester.
 
-**Verifier**
+**Relying Party**
 
-The verifier of an attestation is an entity going through the process of reading an attestation for a given content and making conclusions on whether to trust that content.
+The Relying Party for an attestation is an entity going through the process of reading an attestation for a given content and making conclusions on whether to trust that content.
+
+Please note that the funcion names in this specification use the term "verify". This term could be mistakenly understood as "checking" the validity of some content, while it actually corresponds to the action of attesting to some content. While ambiguous, that term is kept for historical reasons.
 
 ## Specification
 
-The general idea of this EIP is that attesting a given content is equivalent to attesting a hash of that content, as long as the hashing function is known by the attester and the verifier.
+The general idea of this EIP is that attesting a given content is equivalent to attesting a hash of that content, as long as the hashing function is known by the attester and the relying party.
 
 An attestation is recorded as an `(iat, exp)` tuple, where `iat` ("issued at") is the time the attestation starts to be valid, and `exp` ("expires") is the time after which the attestation is no longer valid.
 
@@ -49,40 +51,40 @@ Note the special meaning of the following values:
 
 This EIP defines the following functions:
 
-**attest**
+**verify**
 
 Used in a transaction to record an `(iat, exp)` attestation of a given hash.
 
 ```js
- function attest(bytes32 hash, uint iat, uint exp) public;
+ function verify(bytes32 hash, uint validDays) public;
 ```
 
-**attestations**
+**verifications**
 
 Used to read the most recent attestation, if any, of a given `hash`, recorded by a given `attester`. Its return value is an `(iat, exp)` tuple.
 
 ```js
-function attestations(bytes32 hash, address attester) public;
+function verifications(bytes32 hash, address by) public;
 ```
 
 This EIP defines the following event:
 
-**Attested**
+**Verified**
 
 This event is emitted everytime a `hash` is attested or revoked by an `attester` and contains the `iat` and `exp` times of the attestation. A value of `0` for `iat` means any previous attestation is being revoked. The event may be emitted with any values for `iat` and `exp`, including values equal to the previous ones (for example an already revoked attestation may be revoked again, or an attestation may be attested again with the same values).
 
 ```js
-event Attested(bytes32 indexed hash, address attester, uint iat, uint exp);
+event Verified(bytes32 indexed hash, address by, uint date, uint expDate);
 ```
 
 ## Note about validity times
 
-The validity time range is a mere indication by the attester. This EIP does not define what policy should be applied by verifying software or people with respect to current time. Here are a few real-life policy examples:
+The validity time range is a mere indication by the attester. This EIP does not define what policy should be applied by relying party software or people with respect to current time. Here are a few real-life policy examples:
 
-- **Safe policy**. Some verifiers might decide that an attestation is only acceptable if the expiration time is at least 6 months in the future.
-- **Flexible policy**. Some verifiers might leave a tolerance window during which they still accept an expired attestation.
-- **Strict policy**. Some verifiers might only accept an attestation during the attestation time range.
-- Some verifiers might apply more complex policies, e.g. where the tolerance depends on the identity of the attester, on the content, on the actual transaction time of the attestation, on the existence of previous attestations, etc.
+- **Safe policy**. Some relying parties might decide that an attestation is only acceptable if the expiration time is at least 6 months in the future.
+- **Flexible policy**. Some relying parties might leave a tolerance window during which they still accept an expired attestation.
+- **Strict policy**. Some relying parties might only accept an attestation during the attestation time range.
+- Some relying parties might apply more complex policies, e.g. where the tolerance depends on the identity of the attester, on the content, on the actual transaction time of the attestation, on the existence of previous attestations, etc.
 
 ## Rationale
 
@@ -92,7 +94,7 @@ Information stored on a blockchain is both public and permanent, which makes it 
 - Including validity times means leaking out information allowing to suspect or discard specific contents for a given hash. For example, time ranges of 3 weeks might give up certain types of documents, and exclude e.g. passports.
 - Leaving validity times off-chain (typically in the original document) might not work very well for some types of documents where the issuer and the attester are separate entities and the attester doesn't have the liberty to emit an "attestation document" containing validity times.
 
-This specification allows verifiers to store date information on-chain. However, the attester and the verifier are always free to use any non-zero value in the `(iat, exp)` tuple and maintain date information off-chain instead.
+This specification allows relying parties to store date information on-chain. However, the attester and the relying party are always free to use any non-zero value in the `(iat, exp)` tuple and maintain date information off-chain instead.
 
 ### Attesting hashes vs. plain data
 To follow best practices, it was deemed equally secure, cheaper, and most respectful to privacy to record fixed-length `bytes32` data rather than actual content.
